@@ -5,33 +5,50 @@ import ProductoBD from './ProductoBD'
 
 dotenv.config() 
 const app = express()
+const router = express.Router()
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended: true}))
-
-app.get('/', (req, res) => console.log(__dirname))
+app.use(express.static(__dirname + '/public'))
 
 let producto = new ProductoBD()
 
 
-app.get('/api/productos', (req, res) => {
+router.get('/productos', (req, res) => {
   try {
     res.status(200).json(producto.getAll())
   } catch (err) { return res.status(500).json( { error: err.message })}
 })
 
-app.get('/api/productos/:id', (req, res) => {
+router.get('/productos/:id', (req, res) => {
   try {
     res.status(200).json(producto.getOne(+req.params.id))
   } catch (err) { return res.status(500).json( { error: err.message })}
 })
 
-app.post('/api/productos', (req, res) => {
+router.post('/productos', (req, res) => {
   try {    
+    if(!req.body.title && req.body.title == '') {
+      throw Error('Falta el titulo del producto')
+    }
+
     res.status(200).json(producto.add(req.body))
-  } catch (err) { console.log(`err: ${err}`)}
+  } catch (err) { return res.status(500).json({ error: err.message || 'Error'})}
+})
+
+router.put('/productos/:id', (req, res) => {
+  try {
+    res.status(200).json(producto.update(req.body))
+  } catch (err) { return res.status(500).json({ error: err.message || 'Error'})}
+})
+
+router.delete('/productos/:id', (req, res) => {
+  try {
+    res.status(200).json(producto.delete(+req.params.id))
+  } catch (err) { return res.status(500).json({ error: err.message || 'Error'})}
 })
 
 
+app.use('/api', router)
 
 
 
